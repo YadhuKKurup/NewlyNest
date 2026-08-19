@@ -75,6 +75,18 @@ export const workspaceService = {
     return { ...workspace, mode };
   },
 
+  // Delete workspace
+  async deleteWorkspace(workspaceId: string): Promise<boolean> {
+    await supabase.from('budget_items').delete().eq('workspace_id', workspaceId);
+    await supabase.from('workspace_members').delete().eq('workspace_id', workspaceId);
+    const { error } = await supabase.from('workspaces').delete().eq('id', workspaceId);
+    if (error) {
+      console.error('Error deleting workspace:', error);
+      return false;
+    }
+    return true;
+  },
+
   // Join workspace via partner invite link
   async joinWorkspace(userId: string, workspaceId: string): Promise<boolean> {
     const { error } = await supabase.from('workspace_members').insert({
