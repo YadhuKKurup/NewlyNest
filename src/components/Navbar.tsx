@@ -65,13 +65,13 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Action Controls */}
         <div className="flex items-center gap-2 sm:gap-3">
 
-          {/* Distinct Vibrant Emerald Gradient Add Item Button */}
+          {/* Clean & Elegant Add Item Button */}
           <button
             onClick={onOpenAddItem}
-            className="inline-flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-sm font-extrabold rounded-2xl text-white bg-gradient-to-r from-emerald-500 via-teal-500 to-indigo-600 hover:from-emerald-600 hover:to-indigo-700 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 ring-2 ring-emerald-400/30 active:scale-95 transition-all whitespace-nowrap"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm transition-all whitespace-nowrap"
           >
-            <Plus className="w-4 h-4 stroke-[3]" />
-            <span>+ Add Item</span>
+            <Plus className="w-4 h-4" />
+            <span>Add Item</span>
           </button>
 
           {/* Print / PDF Button */}
