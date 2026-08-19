@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, Users, Copy, Check, Heart, Plus } from 'lucide-react';
+import { X, Users, Copy, Check, Heart, Plus, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { workspaceService, Workspace } from '../lib/workspaceService';
 
@@ -21,6 +21,7 @@ export const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
   const { user } = useAuth();
   const [name, setName] = useState('');
   const [targetBudget, setTargetBudget] = useState('500000');
+  const [mode, setMode] = useState<'solo' | 'couple'>('solo');
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -32,7 +33,7 @@ export const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
     setLoading(true);
 
     const budgetNum = parseFloat(targetBudget) || 500000;
-    const ws = await workspaceService.createWorkspace(user.id, name.trim(), budgetNum, false);
+    const ws = await workspaceService.createWorkspace(user.id, name.trim(), budgetNum, false, mode);
     setLoading(false);
 
     if (ws) {
@@ -73,10 +74,10 @@ export const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
           </div>
           <div>
             <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">
-              {activeWorkspace ? 'Couple Workspace & Sharing' : 'Create Couple Workspace'}
+              {activeWorkspace ? 'Workspace & Partner Settings' : 'Create New Workspace'}
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Invite your partner to edit and track budget items together in real-time
+              Manage your personal or shared partner budget workspaces
             </p>
           </div>
         </div>
@@ -118,6 +119,46 @@ export const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
             {activeWorkspace ? 'Create Another Workspace' : 'Setup Workspace'}
           </h4>
 
+          {/* Mode Selector (Solo vs Couple) */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+              Workspace Mode
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setMode('solo')}
+                className={`p-3 rounded-xl border flex items-center gap-2 text-left transition-all ${
+                  mode === 'solo'
+                    ? 'border-indigo-600 bg-indigo-50/60 dark:bg-indigo-950/60 font-bold'
+                    : 'border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40'
+                }`}
+              >
+                <User className="w-4 h-4 text-indigo-500" />
+                <div>
+                  <div className="text-xs text-slate-900 dark:text-white">Solo Mode</div>
+                  <div className="text-[10px] font-normal text-slate-500">Individual</div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setMode('couple')}
+                className={`p-3 rounded-xl border flex items-center gap-2 text-left transition-all ${
+                  mode === 'couple'
+                    ? 'border-rose-500 bg-rose-50/60 dark:bg-rose-950/60 font-bold'
+                    : 'border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40'
+                }`}
+              >
+                <Heart className="w-4 h-4 text-rose-500" />
+                <div>
+                  <div className="text-xs text-slate-900 dark:text-white">Couple Mode</div>
+                  <div className="text-[10px] font-normal text-slate-500">Partner Sync</div>
+                </div>
+              </button>
+            </div>
+          </div>
+
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Workspace / Couple Name
@@ -126,7 +167,7 @@ export const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Rahul & Priya's Nest Budget"
+              placeholder={mode === 'solo' ? "e.g. My Personal Home Budget" : "e.g. Rahul & Priya's Nest"}
               className="w-full px-3 py-2.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               required
             />
