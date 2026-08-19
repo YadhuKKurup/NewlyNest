@@ -61,6 +61,7 @@ export const workspaceService = {
     if (seedDemoItems) {
       const itemsToInsert = INITIAL_BUDGET_ITEMS.map((item) => ({
         workspace_id: workspace.id,
+        category_id: item.category,
         name: item.name,
         min_price: item.minPrice,
         max_price: item.maxPrice,
@@ -137,6 +138,7 @@ export const workspaceService = {
       .from('budget_items')
       .insert({
         workspace_id: workspaceId,
+        category_id: item.category,
         name: item.name,
         min_price: item.minPrice,
         max_price: item.maxPrice,
@@ -156,6 +158,7 @@ export const workspaceService = {
     const { error } = await supabase
       .from('budget_items')
       .update({
+        category_id: item.category,
         name: item.name,
         min_price: item.minPrice,
         max_price: item.maxPrice,
