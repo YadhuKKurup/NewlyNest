@@ -128,13 +128,13 @@ export const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
                 onClick={() => setMode('solo')}
                 className={`p-2.5 rounded-xl border flex items-center gap-2 text-left transition-all ${
                   mode === 'solo'
-                    ? 'border-indigo-600 bg-indigo-50/60 dark:bg-indigo-950/60 font-bold'
+                    ? 'border-indigo-600 bg-indigo-50/60 dark:bg-indigo-950/60 font-bold ring-2 ring-indigo-500/20'
                     : 'border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40'
                 }`}
               >
-                <User className="w-4 h-4 text-indigo-500" />
+                <User className="w-4 h-4 text-indigo-500 flex-shrink-0" />
                 <div>
-                  <div className="text-xs text-slate-900 dark:text-white">Solo Mode</div>
+                  <div className="text-xs text-slate-900 dark:text-white font-extrabold">Solo Mode</div>
                   <div className="text-[10px] font-normal text-slate-500">Individual use</div>
                 </div>
               </button>
@@ -144,14 +144,14 @@ export const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
                 onClick={() => setMode('couple')}
                 className={`p-2.5 rounded-xl border flex items-center gap-2 text-left transition-all ${
                   mode === 'couple'
-                    ? 'border-rose-500 bg-rose-50/60 dark:bg-rose-950/60 font-bold'
+                    ? 'border-rose-500 bg-rose-50/60 dark:bg-rose-950/60 font-bold ring-2 ring-rose-500/20'
                     : 'border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40'
                 }`}
               >
-                <Heart className="w-4 h-4 text-rose-500" />
+                <Heart className="w-4 h-4 text-rose-500 flex-shrink-0" />
                 <div>
-                  <div className="text-xs text-slate-900 dark:text-white">Couple Mode</div>
-                  <div className="text-[10px] font-normal text-slate-500">Partner sync</div>
+                  <div className="text-xs text-slate-900 dark:text-white font-extrabold">Shared / Couple</div>
+                  <div className="text-[10px] font-normal text-slate-500">Live partner sync</div>
                 </div>
               </button>
             </div>

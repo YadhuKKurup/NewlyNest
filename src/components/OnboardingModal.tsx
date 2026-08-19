@@ -43,7 +43,6 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
     setLoading(true);
 
     const budgetNum = parseFloat(targetBudget) || 500000;
-    // Always seedDemoItems = false for logged in users (clean 0 items)
     const ws = await workspaceService.createWorkspace(
       user.id,
       name.trim(),
@@ -80,7 +79,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
           </p>
         </div>
 
-        {/* STEP 1: Mode Selection (Solo vs Couple) */}
+        {/* STEP 1: Mode Selection (Solo vs Shared/Couple) */}
         {step === 1 && (
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -124,7 +123,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   <Users className="w-6 h-6" />
                 </div>
                 <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center justify-between">
-                  <span>Couple / Shared</span>
+                  <span>Shared / Couple</span>
                   <ArrowRight className="w-4 h-4 text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">

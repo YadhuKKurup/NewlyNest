@@ -6,23 +6,27 @@
 -- 1. Enable UUID Extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- 2. Workspaces Table (Couples Budget Workspace)
+-- 2. Workspaces Table
 CREATE TABLE IF NOT EXISTS public.workspaces (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     name TEXT NOT NULL DEFAULT 'Our Home Budget',
     owner_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     total_target_budget NUMERIC DEFAULT 500000,
-    currency TEXT NOT NULL DEFAULT '₹'
+    currency TEXT NOT NULL DEFAULT '₹',
+    mode TEXT DEFAULT 'solo'
 );
 
--- 3. Workspace Members Table (Partner Invite & Sharing)
+-- Ensure mode column exists if table was previously created
+ALTER TABLE public.workspaces ADD COLUMN IF NOT EXISTS mode TEXT DEFAULT 'solo';
+
+-- 3. Workspace Members Table
 CREATE TABLE IF NOT EXISTS public.workspace_members (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     workspace_id UUID NOT NULL REFERENCES public.workspaces(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    role TEXT NOT NULL DEFAULT 'member', -- 'owner', 'partner'
+    role TEXT NOT NULL DEFAULT 'member',
     UNIQUE(workspace_id, user_id)
 );
 
@@ -38,7 +42,7 @@ CREATE TABLE IF NOT EXISTS public.categories (
     sort_order INT DEFAULT 0
 );
 
--- 5. Budget Items Table
+-- 5. Budget Items Table (category_id stored as TEXT slug)
 CREATE TABLE IF NOT EXISTS public.budget_items (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -53,21 +57,17 @@ CREATE TABLE IF NOT EXISTS public.budget_items (
     notes TEXT
 );
 
--- Fix category_id column type if previously created as UUID
+-- Ensure category_id is TEXT slug
 ALTER TABLE public.budget_items DROP CONSTRAINT IF EXISTS budget_items_category_id_fkey;
 ALTER TABLE public.budget_items ALTER COLUMN category_id TYPE TEXT USING category_id::TEXT;
 
--- ========================================================
--- ROW LEVEL SECURITY (RLS) POLICIES
--- Ensures each couple can only see and edit their own workspace
--- ========================================================
-
+-- Enable RLS
 ALTER TABLE public.workspaces ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.workspace_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.budget_items ENABLE ROW LEVEL SECURITY;
 
--- Workspaces Policies
+-- Workspaces RLS
 CREATE POLICY "Users can view workspaces they belong to" 
 ON public.workspaces FOR SELECT 
 USING (
@@ -86,7 +86,18 @@ USING (
     EXISTS (SELECT 1 FROM public.workspace_members WHERE workspace_id = public.workspaces.id AND user_id = auth.uid())
 );
 
--- Categories Policies
+CREATE POLICY "Users can delete their workspace" 
+ON public.workspaces FOR DELETE 
+USING (auth.uid() = owner_id);
+
+-- Workspace Members RLS
+CREATE POLICY "Users can delete members of their workspace" 
+ON public.workspace_members FOR DELETE 
+USING (
+    EXISTS (SELECT 1 FROM public.workspaces WHERE id = workspace_id AND owner_id = auth.uid()) OR user_id = auth.uid()
+);
+
+-- Categories RLS
 CREATE POLICY "Users can manage categories in their workspace" 
 ON public.categories FOR ALL 
 USING (
@@ -97,7 +108,7 @@ USING (
     )
 );
 
--- Budget Items Policies
+-- Budget Items RLS
 CREATE POLICY "Users can manage budget items in their workspace" 
 ON public.budget_items FOR ALL 
 USING (
@@ -108,7 +119,7 @@ USING (
     )
 );
 
--- Enable Realtime Sync on budget_items & categories
+-- Enable Realtime Sync
 ALTER PUBLICATION supabase_realtime ADD TABLE public.categories;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.budget_items;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.workspaces;

@@ -13,8 +13,12 @@ CREATE TABLE IF NOT EXISTS public.workspaces (
     name TEXT NOT NULL DEFAULT 'Our Home Budget',
     owner_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     total_target_budget NUMERIC DEFAULT 500000,
-    currency TEXT NOT NULL DEFAULT '₹'
+    currency TEXT NOT NULL DEFAULT '₹',
+    mode TEXT DEFAULT 'solo'
 );
+
+-- Ensure mode column exists if table was previously created
+ALTER TABLE public.workspaces ADD COLUMN IF NOT EXISTS mode TEXT DEFAULT 'solo';
 
 -- 3. Workspace Members Table
 CREATE TABLE IF NOT EXISTS public.workspace_members (
@@ -80,6 +84,17 @@ ON public.workspaces FOR UPDATE
 USING (
     auth.uid() = owner_id OR 
     EXISTS (SELECT 1 FROM public.workspace_members WHERE workspace_id = public.workspaces.id AND user_id = auth.uid())
+);
+
+CREATE POLICY "Users can delete their workspace" 
+ON public.workspaces FOR DELETE 
+USING (auth.uid() = owner_id);
+
+-- Workspace Members RLS
+CREATE POLICY "Users can delete members of their workspace" 
+ON public.workspace_members FOR DELETE 
+USING (
+    EXISTS (SELECT 1 FROM public.workspaces WHERE id = workspace_id AND owner_id = auth.uid()) OR user_id = auth.uid()
 );
 
 -- Categories RLS

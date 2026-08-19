@@ -71,7 +71,10 @@ function HomeContent() {
       // Fetch user's workspaces
       const workspaces = await workspaceService.getUserWorkspaces(user.id);
       if (workspaces.length > 0) {
-        const active = workspaces[0];
+        const currentActive = useBudgetStore.getState().activeWorkspace;
+        const matched = currentActive ? workspaces.find((w) => w.id === currentActive.id) : null;
+        const active = matched || workspaces[0];
+
         setActiveWorkspace(active);
         const cloudItems = await workspaceService.getWorkspaceItems(active.id);
         setItems(cloudItems); // Load user's cloud items (can be [] for clean dashboard)

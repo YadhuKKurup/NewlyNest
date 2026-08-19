@@ -23,10 +23,13 @@ export const workspaceService = {
       console.error('Error fetching workspaces:', error);
       return [];
     }
-    return data || [];
+    return (data || []).map((ws) => ({
+      ...ws,
+      mode: (ws.mode as 'solo' | 'couple') || 'solo',
+    }));
   },
 
-  // Create new workspace (Defaults to seedDemoItems = false for a clean 0-item dashboard)
+  // Create new workspace
   async createWorkspace(
     userId: string,
     name: string,
@@ -41,13 +44,37 @@ export const workspaceService = {
         name,
         total_target_budget: targetBudget,
         currency: '₹',
+        mode: mode,
       })
       .select()
       .single();
 
     if (error || !workspace) {
-      console.error('Error creating workspace:', error);
-      return null;
+      // Fallback if mode column does not exist in DB yet
+      console.warn('Error inserting workspace with mode, retrying without mode column:', error?.message);
+      const { data: fallbackWs, error: fallbackError } = await supabase
+        .from('workspaces')
+        .insert({
+          owner_id: userId,
+          name,
+          total_target_budget: targetBudget,
+          currency: '₹',
+        })
+        .select()
+        .single();
+
+      if (fallbackError || !fallbackWs) {
+        console.error('Error creating workspace in fallback:', fallbackError);
+        return null;
+      }
+
+      await supabase.from('workspace_members').insert({
+        workspace_id: fallbackWs.id,
+        user_id: userId,
+        role: 'owner',
+      });
+
+      return { ...fallbackWs, mode };
     }
 
     // Add owner to members table
