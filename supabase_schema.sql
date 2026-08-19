@@ -1,5 +1,5 @@
 -- ========================================================
--- NEWLYWED NEST BUDGET PLANNER - SUPABASE DATABASE SCHEMA
+-- NEWLYNEST BUDGET PLANNER - SUPABASE DATABASE SCHEMA
 -- Copy and paste this script into Supabase Dashboard -> SQL Editor
 -- ========================================================
 
@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS public.budget_items (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     workspace_id UUID NOT NULL REFERENCES public.workspaces(id) ON DELETE CASCADE,
-    category_id UUID REFERENCES public.categories(id) ON DELETE SET NULL,
+    category_id TEXT DEFAULT 'bedroom',
     name TEXT NOT NULL,
     min_price NUMERIC DEFAULT 0,
     max_price NUMERIC DEFAULT 0,
@@ -52,6 +52,10 @@ CREATE TABLE IF NOT EXISTS public.budget_items (
     purchased BOOLEAN DEFAULT FALSE,
     notes TEXT
 );
+
+-- Fix category_id column type if previously created as UUID
+ALTER TABLE public.budget_items DROP CONSTRAINT IF EXISTS budget_items_category_id_fkey;
+ALTER TABLE public.budget_items ALTER COLUMN category_id TYPE TEXT USING category_id::TEXT;
 
 -- ========================================================
 -- ROW LEVEL SECURITY (RLS) POLICIES
