@@ -88,6 +88,16 @@ export const workspaceService = {
     return true;
   },
 
+  // Clear all items in a workspace
+  async clearWorkspaceItems(workspaceId: string): Promise<boolean> {
+    const { error } = await supabase.from('budget_items').delete().eq('workspace_id', workspaceId);
+    if (error) {
+      console.error('Error clearing workspace items:', error);
+      return false;
+    }
+    return true;
+  },
+
   // Join workspace via partner invite link
   async joinWorkspace(userId: string, workspaceId: string): Promise<boolean> {
     const { error } = await supabase.from('workspace_members').insert({

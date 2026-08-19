@@ -54,8 +54,8 @@ export const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-fadeIn overflow-y-auto">
-      <div className="relative w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-2xl border border-slate-200 dark:border-slate-800">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-fadeIn overflow-x-hidden overflow-y-auto">
+      <div className="relative w-full max-w-xl max-h-[85vh] overflow-x-hidden overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-2xl border border-slate-200 dark:border-slate-800">
         
         {/* Background ambient light */}
         <div className="absolute top-0 right-0 -mr-16 -mt-16 w-36 h-36 rounded-full bg-rose-500/10 blur-2xl pointer-events-none" />
@@ -101,11 +101,11 @@ export const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
                 type="text"
                 readOnly
                 value={inviteUrl}
-                className="w-full px-3 py-1.5 text-xs rounded-xl bg-white dark:bg-slate-800 border border-indigo-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-mono focus:outline-none"
+                className="w-full min-w-0 px-3 py-1.5 text-xs rounded-xl bg-white dark:bg-slate-800 border border-indigo-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-mono focus:outline-none truncate"
               />
               <button
                 onClick={handleCopyLink}
-                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 transition-colors whitespace-nowrap shadow-sm"
+                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 transition-colors whitespace-nowrap shadow-sm flex-shrink-0"
               >
                 {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                 <span>{copied ? 'Copied!' : 'Copy'}</span>
@@ -114,10 +114,10 @@ export const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
           </div>
         )}
 
-        {/* Create New Workspace Form (2-Column Compact Layout) */}
+        {/* Create New Workspace Form */}
         <form onSubmit={handleCreate} className="space-y-4 pt-3 border-t border-slate-100 dark:border-slate-800">
           
-          {/* Mode Selector (Compact Grid) */}
+          {/* Mode Selector */}
           <div>
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
               Select Workspace Mode
@@ -157,7 +157,7 @@ export const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
             </div>
           </div>
 
-          {/* 2-Column Input Grid */}
+          {/* Input Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">

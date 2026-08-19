@@ -23,6 +23,7 @@ interface BudgetStoreState {
   addItem: (item: Omit<BudgetItem, 'id'>) => void;
   deleteItem: (id: string) => void;
   resetToDefault: () => void;
+  clearAllWorkspaceItems: () => void;
 
   setSearchQuery: (query: string) => void;
   setSelectedCategory: (category: CategoryId | 'all' | 'full-products') => void;
@@ -155,6 +156,19 @@ export const useBudgetStore = create<BudgetStoreState>()(
           selectedCategory: 'all',
           statusFilter: 'all',
         });
+      },
+
+      clearAllWorkspaceItems: () => {
+        const { activeWorkspace } = get();
+        set({
+          items: [],
+          searchQuery: '',
+          selectedCategory: 'all',
+          statusFilter: 'all',
+        });
+        if (activeWorkspace) {
+          workspaceService.clearWorkspaceItems(activeWorkspace.id);
+        }
       },
 
       setSearchQuery: (query: string) => set({ searchQuery: query }),

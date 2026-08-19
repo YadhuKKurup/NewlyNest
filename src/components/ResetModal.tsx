@@ -1,8 +1,9 @@
 'use client';
 
 import React from 'react';
-import { AlertTriangle, RotateCcw, X } from 'lucide-react';
+import { AlertTriangle, Trash2, RotateCcw, X } from 'lucide-react';
 import { useBudgetStore } from '../store/useBudgetStore';
+import { useAuth } from '../context/AuthContext';
 
 interface ResetModalProps {
   isOpen: boolean;
@@ -10,12 +11,19 @@ interface ResetModalProps {
 }
 
 export const ResetModal: React.FC<ResetModalProps> = ({ isOpen, onClose }) => {
-  const { resetToDefault } = useBudgetStore();
+  const { user } = useAuth();
+  const { resetToDefault, clearAllWorkspaceItems } = useBudgetStore();
 
   if (!isOpen) return null;
 
   const handleConfirm = () => {
-    resetToDefault();
+    if (user) {
+      // Logged in user: Clear cloud items permanently to 0 items
+      clearAllWorkspaceItems();
+    } else {
+      // Guest mode: Reset local storage back to 26 sample demo items
+      resetToDefault();
+    }
     onClose();
   };
 
@@ -37,10 +45,12 @@ export const ResetModal: React.FC<ResetModalProps> = ({ isOpen, onClose }) => {
 
         <div>
           <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">
-            Reset to Default 26 Items?
+            {user ? 'Clear All Workspace Items?' : 'Reset Guest Demo Items?'}
           </h3>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
-            This will overwrite any current edits and restore the original 26 pre-categorized starter items and price targets.
+            {user
+              ? 'This will permanently delete all budget items in your active workspace database. Your dashboard will be reset to 0 items.'
+              : 'This will restore the original 26 pre-categorized starter demo items for guest preview.'}
           </p>
         </div>
 
@@ -53,10 +63,10 @@ export const ResetModal: React.FC<ResetModalProps> = ({ isOpen, onClose }) => {
           </button>
           <button
             onClick={handleConfirm}
-            className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-xl text-white bg-amber-600 hover:bg-amber-700 shadow-md shadow-amber-600/20 transition-all"
+            className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-xl text-white bg-rose-600 hover:bg-rose-700 shadow-md shadow-rose-600/20 transition-all"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Reset Matrix</span>
+            {user ? <Trash2 className="w-3.5 h-3.5" /> : <RotateCcw className="w-3.5 h-3.5" />}
+            <span>{user ? 'Clear All Items' : 'Reset Demo'}</span>
           </button>
         </div>
 
