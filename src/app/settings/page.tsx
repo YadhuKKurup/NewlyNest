@@ -146,7 +146,7 @@ function SettingsContent() {
     await workspaceService.deleteWorkspace(wsId);
     setDeletingWorkspaceId(null);
 
-    const updated = await workspaceService.getUserWorkspaces(user.id);
+    const updated = workspaces.filter((w) => w.id !== wsId);
     setWorkspaces(updated);
 
     if (activeWorkspace?.id === wsId && updated.length > 0) {

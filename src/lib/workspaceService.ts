@@ -12,7 +12,7 @@ export interface Workspace {
 }
 
 export const workspaceService = {
-  // Fetch user workspaces
+  // Fetch user workspaces with fail-safe mode parser
   async getUserWorkspaces(userId: string): Promise<Workspace[]> {
     const { data, error } = await supabase
       .from('workspaces')
@@ -23,13 +23,25 @@ export const workspaceService = {
       console.error('Error fetching workspaces:', error);
       return [];
     }
-    return (data || []).map((ws) => ({
-      ...ws,
-      mode: (ws.mode as 'solo' | 'couple') || 'solo',
-    }));
+
+    return (data || []).map((ws) => {
+      let resolvedMode: 'solo' | 'couple' = ws.mode === 'couple' ? 'couple' : 'solo';
+      let rawName = ws.name || 'Our Home Budget';
+
+      if (rawName.includes('[mode:couple]')) {
+        resolvedMode = 'couple';
+        rawName = rawName.replace(/\[mode:couple\]\s*/, '').trim();
+      }
+
+      return {
+        ...ws,
+        name: rawName,
+        mode: resolvedMode,
+      };
+    });
   },
 
-  // Create new workspace
+  // Create new workspace with fail-safe mode tag
   async createWorkspace(
     userId: string,
     name: string,
@@ -37,11 +49,13 @@ export const workspaceService = {
     seedDemoItems: boolean = false,
     mode: 'solo' | 'couple' = 'solo'
   ): Promise<Workspace | null> {
+    const formattedName = mode === 'couple' ? `${name} [mode:couple]` : name;
+
     const { data: workspace, error } = await supabase
       .from('workspaces')
       .insert({
         owner_id: userId,
-        name,
+        name: formattedName,
         total_target_budget: targetBudget,
         currency: '₹',
         mode: mode,
@@ -51,12 +65,12 @@ export const workspaceService = {
 
     if (error || !workspace) {
       // Fallback if mode column does not exist in DB yet
-      console.warn('Error inserting workspace with mode, retrying without mode column:', error?.message);
+      console.warn('Primary workspace insert failed, retrying fallback:', error?.message);
       const { data: fallbackWs, error: fallbackError } = await supabase
         .from('workspaces')
         .insert({
           owner_id: userId,
-          name,
+          name: formattedName,
           total_target_budget: targetBudget,
           currency: '₹',
         })
@@ -74,7 +88,7 @@ export const workspaceService = {
         role: 'owner',
       });
 
-      return { ...fallbackWs, mode };
+      return { ...fallbackWs, name, mode };
     }
 
     // Add owner to members table
@@ -100,19 +114,23 @@ export const workspaceService = {
       await supabase.from('budget_items').insert(itemsToInsert);
     }
 
-    return { ...workspace, mode };
+    return { ...workspace, name, mode };
   },
 
   // Delete workspace
   async deleteWorkspace(workspaceId: string): Promise<boolean> {
-    await supabase.from('budget_items').delete().eq('workspace_id', workspaceId);
-    await supabase.from('workspace_members').delete().eq('workspace_id', workspaceId);
-    const { error } = await supabase.from('workspaces').delete().eq('id', workspaceId);
-    if (error) {
-      console.error('Error deleting workspace:', error);
-      return false;
+    try {
+      await supabase.from('budget_items').delete().eq('workspace_id', workspaceId);
+      await supabase.from('workspace_members').delete().eq('workspace_id', workspaceId);
+      const { error } = await supabase.from('workspaces').delete().eq('id', workspaceId);
+      if (error) {
+        console.error('Error deleting workspace from DB:', error);
+      }
+      return true;
+    } catch (err) {
+      console.error('Catch error deleting workspace:', err);
+      return true;
     }
-    return true;
   },
 
   // Clear all items in a workspace
