@@ -14,6 +14,7 @@ import { ResetModal } from '../components/ResetModal';
 import { AuthModal } from '../components/AuthModal';
 import { WorkspaceModal } from '../components/WorkspaceModal';
 import { OnboardingModal } from '../components/OnboardingModal';
+import { UserProfileModal } from '../components/UserProfileModal';
 import { PrintView } from '../components/PrintView';
 import { useBudgetStore } from '../store/useBudgetStore';
 import { INITIAL_CATEGORIES, INITIAL_BUDGET_ITEMS } from '../data/initialBudget';
@@ -39,6 +40,7 @@ function HomeContent() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isWorkspaceModalOpen, setIsWorkspaceModalOpen] = useState(false);
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
+  const [isUserProfileModalOpen, setIsUserProfileModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<BudgetItem | null>(null);
   const [isPurchasedOnlyMode, setIsPurchasedOnlyMode] = useState(false);
   const [defaultCatForAdd, setDefaultCatForAdd] = useState<CategoryId>('bedroom');
@@ -174,6 +176,7 @@ function HomeContent() {
             }}
             onTriggerPrint={handleTriggerPrint}
             onOpenAuthModal={() => setIsAuthModalOpen(true)}
+            onOpenUserProfileModal={() => setIsUserProfileModalOpen(true)}
           />
 
           <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -315,6 +318,13 @@ function HomeContent() {
             setActiveWorkspace(ws);
             workspaceService.getWorkspaceItems(ws.id).then(setItems);
           }}
+        />
+
+        <UserProfileModal
+          isOpen={isUserProfileModalOpen}
+          onClose={() => setIsUserProfileModalOpen(false)}
+          activeWorkspace={activeWorkspace}
+          onOpenWorkspaceModal={() => setIsWorkspaceModalOpen(true)}
         />
 
       </div>
