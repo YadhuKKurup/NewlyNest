@@ -279,6 +279,7 @@ export const useBudgetStore = create<BudgetStoreState>()(
       partialize: (state) => ({
         items: state.items,
         isDarkMode: state.isDarkMode,
+        activeWorkspace: state.activeWorkspace,
       }),
     }
   )

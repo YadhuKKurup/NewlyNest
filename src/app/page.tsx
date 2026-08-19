@@ -30,10 +30,12 @@ function HomeContent() {
     selectedCategory,
     activeWorkspace,
     setActiveWorkspace,
+    items,
     setItems,
   } = useBudgetStore();
 
   const [mounted, setMounted] = useState(false);
+  const [isWorkspaceLoading, setIsWorkspaceLoading] = useState(false);
   const [isAddItemOpen, setIsAddItemOpen] = useState(false);
   const [isResetOpen, setIsResetOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -56,8 +58,11 @@ function HomeContent() {
         // User logged out: reset active workspace to null and items to sample demo items
         setActiveWorkspace(null);
         setItems(INITIAL_BUDGET_ITEMS);
+        setIsWorkspaceLoading(false);
         return;
       }
+
+      setIsWorkspaceLoading(true);
 
       // Check for invite token in URL
       const searchParams = new URLSearchParams(window.location.search);
@@ -77,12 +82,14 @@ function HomeContent() {
 
         setActiveWorkspace(active);
         const cloudItems = await workspaceService.getWorkspaceItems(active.id);
-        setItems(cloudItems); // Load user's cloud items (can be [] for clean dashboard)
+        setItems(cloudItems); // Load user's cloud items
       } else {
         // User is logged in but has no workspace yet -> Trigger Onboarding Modal!
         setItems([]);
         setIsOnboardingOpen(true);
       }
+
+      setIsWorkspaceLoading(false);
     }
 
     initWorkspace();
@@ -193,8 +200,21 @@ function HomeContent() {
             {/* Filter Bar & Search */}
             <FilterBar />
 
-            {/* 1. FULL PRODUCTS VIEW MODE */}
-            {selectedCategory === 'full-products' ? (
+            {/* Loading Indicator while fetching cloud workspace items */}
+            {isWorkspaceLoading ? (
+              <div className="my-12 text-center py-16 px-4 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm animate-pulse">
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950 text-indigo-500 mb-3">
+                  <div className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+                </div>
+                <h4 className="text-sm font-extrabold text-slate-900 dark:text-white">
+                  Loading Workspace Items...
+                </h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Fetching your latest cloud budget list from Supabase
+                </p>
+              </div>
+            ) : selectedCategory === 'full-products' ? (
+              /* 1. FULL PRODUCTS VIEW MODE */
               <div className="space-y-6 animate-fadeIn">
                 {/* Section A: Category Summary Table */}
                 <CategorySummaryTable />
@@ -230,7 +250,7 @@ function HomeContent() {
             )}
 
             {/* Empty State */}
-            {filteredItems.length === 0 && (
+            {!isWorkspaceLoading && filteredItems.length === 0 && (
               <div className="my-12 text-center py-16 px-4 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-500 mb-4">
                   <Layers className="w-8 h-8" />
